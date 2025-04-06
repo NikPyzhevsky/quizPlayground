@@ -1,0 +1,98 @@
+import { FC, useCallback, useState } from 'react';
+import {Button, ScrollView, StyleSheet, View, Text} from 'react-native';
+
+
+import {IQuestionMultiSelect} from '../../../../models/services/survey';
+import {Multi} from '../../../../../shared/components/Elements';
+import {IOption} from '../../../../../shared/models/components';
+import {useApplicationContext} from '../../../../../shared/context/ApplicationContext.tsx';
+
+const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+        backgroundColor: 'white',
+    },
+    title: {
+        textAlign: 'center',
+    },
+    description: {
+        marginTop: 7,
+        textAlign: 'center',
+        color: 'gray',
+    },
+    content: {
+        flexGrow: 1,
+        paddingHorizontal: 20,
+        paddingTop: 48,
+        paddingBottom: 20 + 72,
+    },
+    icon: {
+        marginTop: 15,
+        alignSelf: 'center',
+    },
+    button: {
+        paddingHorizontal: 20,
+    },
+    selectContainer: {
+        flex: 1,
+        marginTop: 28,
+        marginHorizontal: 17,
+        marginBottom: 56,
+    },
+});
+
+type SingleSelectProps = {
+    question: IQuestionMultiSelect;
+};
+
+const MultiSelect: FC<SingleSelectProps> = ({ question }) => {
+    const {services: {wizard}}  = useApplicationContext();
+    const [values, setValues] = useState<string[]>([]);
+    console.log('rerender multi');
+
+    const labelSelector = useCallback((option: IOption) => option.label, []);
+    const valueSelector = useCallback((option: IOption) => option.value, []);
+
+    const handleNext = useCallback(() => {
+        if (!values ) {
+            return;
+        }
+
+        wizard.next(values);
+    }, [values, wizard]);
+
+
+    return (
+        <>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+                contentContainerStyle={styles.content}
+                style={styles.root}
+            >
+                <Text style={styles.title} >
+                    {question.title}
+                </Text>
+                <Text  style={styles.description}>
+                    {question.description}
+                </Text>
+                <View style={styles.selectContainer}>
+                    <Multi<IOption>
+                        options={question.options}
+                        labelExtractor={labelSelector}
+                        valueExtractor={valueSelector}
+                        values={values}
+                        onValuesChange={setValues}
+                    />
+                </View>
+            </ScrollView>
+            <Button
+                disabled={!values.length}
+                onPress={handleNext}
+                title={question.button}
+            />
+        </>
+    );
+};
+
+export default MultiSelect;
